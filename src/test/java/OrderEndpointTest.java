@@ -2,19 +2,21 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.qameta.allure.Description;
 import io.qameta.allure.Issue;
+import io.qameta.allure.Step;
 import io.qameta.allure.TmsLink;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import ru.stellarburgers.apiclient.IngredientApiClient;
 import ru.stellarburgers.apiclient.OrderApiClient;
 import ru.stellarburgers.apiclient.UserApiClient;
-import ru.stellarburgers.object.Burger;
-import ru.stellarburgers.object.Ingredient;
-import ru.stellarburgers.object.User;
+import ru.stellarburgers.model.Burger;
+import ru.stellarburgers.model.Ingredient;
+import ru.stellarburgers.model.User;
 
 import static org.hamcrest.Matchers.*;
 import java.lang.reflect.Type;
@@ -28,13 +30,16 @@ public class OrderEndpointTest {
 
     private User user;
 
-    List<Ingredient> ingredientsList;
+    private UserApiClient userApiClient = new UserApiClient();
 
-    ArrayList<Object> ingredients = new ArrayList<Object>();
+    private List<Ingredient> ingredientsList;
 
-    Response responseCreateOrder;
+    private ArrayList<Object> ingredients = new ArrayList<Object>();
+
+    private Response responseCreateOrder;
 
     @Before
+    @Step("Создание пользователя перед тестом, получение списка ингридиентов")
     public void setUp() {
         RestAssured.baseURI= BaseURI.BASE_URI;
         createUniqueUser();
@@ -42,7 +47,13 @@ public class OrderEndpointTest {
         responseCreateOrder = createOrder();
     }
 
+    @After
+    @Step("Удаление пользователя")
+    public void deleteUser() {
+        userApiClient.userDelete(user, BaseURI.AUTH_USER_ENDPOINT);
+    }
 
+    @Step("Получение списка ингридиентов")
     private void getAliIngredient() {
 
         IngredientApiClient ingredients = new IngredientApiClient();
@@ -231,6 +242,7 @@ public class OrderEndpointTest {
 
     }
 
+    @Step("Создание заказа")
     public Response createOrder() {
 
         String token = user.getAccessToken();
@@ -247,12 +259,13 @@ public class OrderEndpointTest {
 
     }
 
+    @Step("Создание уникального пользователя")
     private void createUniqueUser() {
 
         String name = RandomStringUtils.randomAlphabetic(10);
         String password = RandomStringUtils.randomAlphabetic(10);
         String email = name + "@" + "yandex.ru";
-        UserApiClient userApiClient = new UserApiClient();
+        //UserApiClient userApiClient = new UserApiClient();
         user = new User(name, password, email);
 
         Response response = userApiClient.userCreate(user, BaseURI.AUTH_REGISTER_ENDPOINT);

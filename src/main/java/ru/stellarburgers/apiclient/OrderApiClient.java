@@ -2,7 +2,7 @@ package ru.stellarburgers.apiclient;
 
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
-import ru.stellarburgers.object.Burger;
+import ru.stellarburgers.model.Burger;
 
 import static io.restassured.RestAssured.given;
 

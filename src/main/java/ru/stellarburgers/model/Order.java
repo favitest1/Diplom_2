@@ -1,4 +1,4 @@
-package ru.stellarburgers.object;
+package ru.stellarburgers.model;
 
 import java.util.ArrayList;
 import java.util.List;

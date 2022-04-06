@@ -1,14 +1,16 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.Issue;
+import io.qameta.allure.Step;
 import io.qameta.allure.TmsLink;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import ru.stellarburgers.apiclient.UserApiClient;
-import ru.stellarburgers.object.User;
+import ru.stellarburgers.model.User;
 
 import java.util.List;
 
@@ -17,9 +19,19 @@ import static org.hamcrest.Matchers.*;
 
 public class UserEndpointTest {
 
+    private User user;
+    private UserApiClient userApiClient = new UserApiClient();
+
     @Before
+    @Step("Инициализация")
     public void setUp() {
         RestAssured.baseURI= BaseURI.BASE_URI;
+    }
+
+    @After
+    @Step ("Удаление пользователя")
+    public void deleteUser() {
+        userApiClient.userDelete(user, BaseURI.AUTH_USER_ENDPOINT);
     }
 
     @Test
@@ -34,13 +46,14 @@ public class UserEndpointTest {
         String password = RandomStringUtils.randomAlphabetic(10);
         String email = name + "@" + "yandex.ru";
         UserApiClient userApiClient = new UserApiClient();
-        User user = new User(name, password, email);
+        user = new User(name, password, email);
 
         //Аct
         Response response = userApiClient.userCreate(user, BaseURI.AUTH_REGISTER_ENDPOINT);
-        //response.then().log().all();
-        //response.then().log().headers();
-        //response.then().log().body();
+        if (response.statusCode() == 200) {
+            user.setAccessToken(response.then().extract().path("accessToken"));
+            user.setRefreshToken(response.then().extract().path("refreshToken"));
+        }
 
         //Аssert
         response.then().assertThat().statusCode(200);
@@ -63,8 +76,8 @@ public class UserEndpointTest {
         String name = RandomStringUtils.randomAlphabetic(10);
         String password = RandomStringUtils.randomAlphabetic(10);
         String email = name + "@" + "yandex.ru";
-        UserApiClient userApiClient = new UserApiClient();
-        User user = new User(name, password, email);
+        //UserApiClient userApiClient = new UserApiClient();
+        user = new User(name, password, email);
 
         List<User> userList = List.of(user, user);
 
@@ -72,6 +85,8 @@ public class UserEndpointTest {
         Response response = userApiClient.userCreate(userList.get(0), BaseURI.AUTH_REGISTER_ENDPOINT);
 
         if (response.statusCode() == 200) {
+            user.setAccessToken(response.then().extract().path("accessToken"));
+            user.setRefreshToken(response.then().extract().path("refreshToken"));
 
             response = userApiClient.userCreate(userList.get(1), BaseURI.AUTH_REGISTER_ENDPOINT);
 
@@ -95,8 +110,8 @@ public class UserEndpointTest {
         String name = "";
         String password = RandomStringUtils.randomAlphabetic(10);
         String email = name + "@" + "yandex.ru";
-        UserApiClient userApiClient = new UserApiClient();
-        User user = new User(name, password, email);
+        //UserApiClient userApiClient = new UserApiClient();
+        user = new User(name, password, email);
 
         //Аct
         Response response = userApiClient.userCreate(user, BaseURI.AUTH_REGISTER_ENDPOINT);
@@ -119,8 +134,8 @@ public class UserEndpointTest {
         String name = RandomStringUtils.randomAlphabetic(10);
         String password = "";
         String email = name + "@" + "yandex.ru";
-        UserApiClient userApiClient = new UserApiClient();
-        User user = new User(name, password, email);
+        //UserApiClient userApiClient = new UserApiClient();
+        user = new User(name, password, email);
 
         //Аct
         Response response = userApiClient.userCreate(user, BaseURI.AUTH_REGISTER_ENDPOINT);
@@ -143,8 +158,8 @@ public class UserEndpointTest {
         String name = RandomStringUtils.randomAlphabetic(10);
         String password = RandomStringUtils.randomAlphabetic(10);
         String email = "";
-        UserApiClient userApiClient = new UserApiClient();
-        User user = new User(name, password, email);
+        //UserApiClient userApiClient = new UserApiClient();
+        user = new User(name, password, email);
 
         //Аct
         Response response = userApiClient.userCreate(user, BaseURI.AUTH_REGISTER_ENDPOINT);

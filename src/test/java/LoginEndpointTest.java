@@ -1,15 +1,17 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.Issue;
+import io.qameta.allure.Step;
 import io.qameta.allure.TmsLink;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import ru.stellarburgers.apiclient.LoginApiClient;
 import ru.stellarburgers.apiclient.UserApiClient;
-import ru.stellarburgers.object.User;
+import ru.stellarburgers.model.User;
 
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.notNullValue;
@@ -17,9 +19,19 @@ import static org.hamcrest.Matchers.notNullValue;
 
 public class LoginEndpointTest {
 
+    private User user;
+    private UserApiClient userApiClient = new UserApiClient();
+
     @Before
+    @Step("Инициализация")
     public void setUp() {
         RestAssured.baseURI= BaseURI.BASE_URI;
+    }
+
+    @After
+    @Step ("Удаление пользователя")
+    public void deleteUser() {
+        userApiClient.userDelete(user, BaseURI.AUTH_USER_ENDPOINT);
     }
 
     @Test
@@ -34,8 +46,7 @@ public class LoginEndpointTest {
         String password = RandomStringUtils.randomAlphabetic(10);
         String email = name + "@" + "yandex.ru";
         LoginApiClient loginApiClient = new LoginApiClient();
-        UserApiClient userApiClient = new UserApiClient();
-        User user = new User(name, password, email);
+        user = new User(name, password, email);
 
         //Аct
         Response response = userApiClient.userCreate(user, BaseURI.AUTH_REGISTER_ENDPOINT);
@@ -44,6 +55,8 @@ public class LoginEndpointTest {
 
             response = loginApiClient.loginUser(user, BaseURI.AUTH_LOGIN_ENDPOINT);
 
+            user.setAccessToken(response.then().extract().path("accessToken"));
+            user.setRefreshToken(response.then().extract().path("refreshToken"));
         }
 
         //Аssert
@@ -68,7 +81,7 @@ public class LoginEndpointTest {
         String password = RandomStringUtils.randomAlphabetic(10);
         String email = name + "@" + "yandex.ru";
         LoginApiClient loginApiClient = new LoginApiClient();
-        User user = new User(name, password, email);
+        user = new User(name, password, email);
 
         //Аct
         Response response = loginApiClient.loginUser(user, BaseURI.AUTH_LOGIN_ENDPOINT);

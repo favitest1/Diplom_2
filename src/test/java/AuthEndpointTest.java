@@ -1,27 +1,37 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.Issue;
+import io.qameta.allure.Step;
 import io.qameta.allure.TmsLink;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import ru.stellarburgers.apiclient.AuthApiClient;
 import ru.stellarburgers.apiclient.UserApiClient;
-import ru.stellarburgers.object.User;
+import ru.stellarburgers.model.User;
 
 import static org.hamcrest.Matchers.*;
 
 public class AuthEndpointTest {
 
     private User user;
-    AuthApiClient authApiClient = new AuthApiClient();
+    private AuthApiClient authApiClient = new AuthApiClient();
+    private UserApiClient userApiClient = new UserApiClient();
 
     @Before
+    @Step ("Создание пользователя перед тестом")
     public void setUp() {
         RestAssured.baseURI= BaseURI.BASE_URI;
         createUniqueUser();
+    }
+
+    @After
+    @Step ("Удаление пользователя")
+    public void deleteUser() {
+        userApiClient.userDelete(user, BaseURI.AUTH_USER_ENDPOINT);
     }
 
     @Test
@@ -145,6 +155,7 @@ public class AuthEndpointTest {
 
     }
 
+    @Step ("Создание уникального пользователя")
     private void createUniqueUser() {
 
         String name = RandomStringUtils.randomAlphabetic(10);

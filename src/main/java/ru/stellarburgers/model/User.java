@@ -1,4 +1,4 @@
-package ru.stellarburgers.object;
+package ru.stellarburgers.model;
 
 public class User {
 

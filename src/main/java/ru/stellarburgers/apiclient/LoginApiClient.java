@@ -1,6 +1,6 @@
 package ru.stellarburgers.apiclient;
 
-import ru.stellarburgers.object.User;
+import ru.stellarburgers.model.User;
 
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
