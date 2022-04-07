@@ -1,5 +1,3 @@
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.qameta.allure.Description;
 import io.qameta.allure.Issue;
 import io.qameta.allure.Step;
@@ -19,7 +17,6 @@ import ru.stellarburgers.model.Ingredient;
 import ru.stellarburgers.model.User;
 
 import static org.hamcrest.Matchers.*;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,11 +28,10 @@ public class OrderEndpointTest {
     private User user;
 
     private UserApiClient userApiClient = new UserApiClient();
-
-    private List<Ingredient> ingredientsList;
-
+    private IngredientApiClient ingredientAApiClient = new IngredientApiClient();
     private ArrayList<Object> ingredients = new ArrayList<Object>();
 
+    private List<Ingredient> ingredientsList;
     private Response responseCreateOrder;
 
     @Before
@@ -43,7 +39,7 @@ public class OrderEndpointTest {
     public void setUp() {
         RestAssured.baseURI= BaseURI.BASE_URI;
         createUniqueUser();
-        getAliIngredient();
+        ingredientsList = ingredientAApiClient.getAliIngredient(BaseURI.INGREDIENTS_ENDPOINT);
         responseCreateOrder = createOrder();
     }
 
@@ -51,22 +47,6 @@ public class OrderEndpointTest {
     @Step("Удаление пользователя")
     public void deleteUser() {
         userApiClient.userDelete(user, BaseURI.AUTH_USER_ENDPOINT);
-    }
-
-    @Step("Получение списка ингридиентов")
-    private void getAliIngredient() {
-
-        IngredientApiClient ingredients = new IngredientApiClient();
-        Gson gson = new Gson();
-        Type collectionType = new TypeToken<List<Ingredient>>(){}.getType();
-
-        Response response = ingredients.getIngredient(BaseURI.INGREDIENTS_ENDPOINT);
-
-        String s = response.then().extract().body().asString();
-        s = s.substring(23, s.length()-1);
-
-        ingredientsList = gson.fromJson(s, collectionType);
-
     }
 
     @Test
